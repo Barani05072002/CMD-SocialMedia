@@ -9,11 +9,10 @@ public class User {
 		public static User logIn(Map<Long,User> data,Long mobile,String password) {
 			Scanner s =new Scanner(System.in);
 			User user = data.get(mobile);
-			User nothing = new User("Nothing",000L,"NULL");
 			if(user.getPassword().equals(password))
 				System.out.println(">>>Login Successfully");
 			else
-				user = nothing;
+				user = null;
 			return user;
 		}
 		public User(String username,Long usermobile,String password) {
@@ -115,7 +114,7 @@ public class User {
 			this.friendList.get(name).removeLast();
 		}
 		public void deleteChat(String name) {
-			this.friendList.get(name).clear();
+			this.friendList.get(name);
 		}
 		public void pastMessages(String name) {
 			Iterator<Message> it = this.friendList.get(name).iterator();
@@ -125,12 +124,22 @@ public class User {
 				System.out.println(m.getUser()+">"+m.getContent()+"("+m.getDate()+")");
 			}
 		}
-		public Message post() throws IOException{
+		public Post post(String name) throws IOException{
 			DataInputStream ds = new DataInputStream(System.in);
 			System.out.print("Enter the post message:");
 			String message = ds.readLine();
-			Message m = new Message(this.userName,message);
+			Post p = new Post(this.userName,name,message);
 			
-			return m;
+			return p;
+		}
+		public void Mention(Map<Long,User> data,Long mobile,String postName)
+		{
+			String name = data.get(mobile).getUsername();
+			String ment = this.userName + " is mentioned you in "+ postName;
+			Message m = new Message(this.userName,ment);
+			if(this.friendList.containsKey(mobile)) {
+				this.friendList.get(name).add(m);
+				data.get(mobile).setMessage(this.userName, m);
+			}
 		}
 }

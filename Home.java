@@ -1,28 +1,21 @@
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 public class Home {
-	public static void viewAllPost(LinkedHashSet<Message> post) {
-		LinkedList<Message> data = new LinkedList<>();
-		Message m;
-		data.addAll(post);
-		Iterator<Message> it = data.descendingIterator();
-		while(it.hasNext()) {
-			m = it.next();
-			System.out.println(m.getUser()+">"+m.getContent()+"("+m.getDate()+")");
+	public static void viewAllPost(HashMap<String,Post> post) {
+		LinkedList<Post> disp = new LinkedList<>();
+		disp.addAll(post.values());
+		Iterator<Post> it = disp.descendingIterator();
+		while(it.hasNext())
+		{
+			Post p = (Post) it.next();
+			System.out.println("User>"+p.getUser()+"\nPostName>"+p.getPostName()+"\n"+p.getContent()+"\nViews:"+p.getViews()+"\tLikes:"+p.getPostLikes());
 		}
-		
-		
-	}
+		}
 	public static void main(String arg[]) throws IOException {
 		
 		//Data
-		Map<Long,User> userData = new HashMap<>();
-		LinkedHashSet<Message> post  = new LinkedHashSet<>();
+		HashMap<Long,User> userData = new HashMap<>();
+		HashMap<String,Post> post = new HashMap<>();
 		
 		Scanner s = new Scanner(System.in);
 		User u;
@@ -38,7 +31,7 @@ public class Home {
 				String password = s.next();
 				if(userData.containsKey(mobile)) {
 					u = User.logIn(userData,mobile,password);
-					if(u.getUsername().equals("Nothing"))
+					if(u == null)
 						System.out.println(">>>Incorrext mobile no or password");
 					else {
 						do {
@@ -47,7 +40,7 @@ public class Home {
 							System.out.println("===========================================================================================");
 							System.out.print("1.UserSettings  ||  2.Friends and Chats  ||    3.Post  ||  4.logout \n>>>");
 							l2 = s.nextInt();
-							int userSetting,friendChat;
+							int userSetting,friendChat,postControl,postElementControl;
 							switch(l2) {
 							case 1:
 								do {
@@ -89,9 +82,58 @@ public class Home {
 								}while(friendChat<4);
 								break;
 							case 3:
-								post.add(u.post());
-								System.out.println(">>>Your post is added");
-								
+								do {
+									System.out.println("===========================================================================================");							
+									viewAllPost(post);
+									System.out.println("===========================================================================================");
+									System.out.print("1.addPost  ||  2.viewPost  ||  3.searchPost  ||  4.Back \n>>>");
+									postControl = s.nextInt();
+									switch(postControl) {
+									case 1:
+										System.out.print("Enter the post Name:");
+										String name = s.next();
+										post.put(name, u.post(name));
+										System.out.println(">>>Your post is added");
+										break;
+									case 2:
+										System.out.print("Enter the postName:");
+										Post postInner =post.get(s.next());
+										postInner.addViews();
+											do {
+												System.out.println("===========================================================================================");	
+												System.out.println(postInner.getUser()+"\n"+postInner.getPostName()+"\nViews:"+postInner.getViews()+"\tLikes:"+postInner.getPostLikes());
+												System.out.println("===========================================================================================");
+
+											System.out.print("1.Like  ||  2.Comment  ||  3.Mention   ||  4.Back \n>>>");
+											postElementControl =s.nextInt();
+											switch(postElementControl) {
+											case 1:
+												postInner.addLike();
+												break;
+											case 2:
+												postInner.viewAllComment();
+												postInner.comment(u.getUsername());
+												break;
+											case 3:
+												System.out.println("Enter the mentioned person mobile no:");
+												mobile = s.nextLong();
+												u.Mention(userData,mobile,postInner.getPostName());
+												break;
+											}
+										}while(postElementControl<4);
+									case 3:
+										System.out.print("Enter the postName:");
+										String searchPost = s.next();
+										if(post.containsKey(searchPost)) {
+											System.out.println("===========================================================================================");	
+											System.out.println(post.get(searchPost).getUser()+"\n"+post.get(searchPost).getPostName()+"\nViews:"+post.get(searchPost).getViews()+"\tLikes:"+post.get(searchPost).getPostLikes());
+											System.out.println("===========================================================================================");
+										}
+										else {
+											System.out.println(">>>Post not fount");
+										}
+									}
+								}while(postControl<4);
 							}
 						}while(l2<4);
 					}
