@@ -1,20 +1,12 @@
 import java.util.*;
 import java.io.*;
 public class User {
+		private String userId;
 		private String userName;
 		private Long userMobile;
 		private String passWord;
 		private Map<String,LinkedList<Message>> friendList;
 		
-		public static User logIn(Map<Long,User> data,Long mobile,String password) {
-			Scanner s =new Scanner(System.in);
-			User user = data.get(mobile);
-			if(user.getPassword().equals(password))
-				System.out.println(">>>Login Successfully");
-			else
-				user = null;
-			return user;
-		}
 		public User(String username,Long usermobile,String password) {
 			this.userName = username;
 			this.userMobile= usermobile;
@@ -27,9 +19,14 @@ public class User {
 			this.userName= s.next();
 			System.out.print("Enter the mobile:");
 			this.userMobile = s.nextLong();
+			System.out.print("Enter the userid:(ex>lux0507)");
+			this.userId = s.next();
 			System.out.print("Enter the password:");
 			this.passWord= s.next();
 			this.friendList = new HashMap<String,LinkedList<Message>>();
+		}
+		public String userID() {
+			return this.userId;
 		}
 		public String getUsername() {
 			return userName;
@@ -65,18 +62,6 @@ public class User {
 				System.out.println(">>>Enter the correct password");
 			}
 		}
-		public void addFriend(Map<Long,User> userData,Long mobile) {
-
-			if(userData.containsKey(mobile)) {
-			this.friendList.put(userData.get(mobile).getUsername(),new LinkedList<Message>());
-			
-			userData.get(mobile).setFriend(this.userName);
-			System.out.println(">>>SuccessFully Added in your FriendList");
-			}
-			else {
-				System.out.println("User not found");
-			}
-		}
 		public void setFriend(String name) {
 			this.friendList.put(name,new LinkedList<Message>());
 		}
@@ -87,20 +72,19 @@ public class User {
 				System.out.println(">>>"+it.next());
 			}
 		}
-		public void sendMessage(Map<Long,User> data,Long mobile) throws IOException {
-			String name = data.get(mobile).getUsername();
+		public void sendMessage(HashMap<String,User> data,String name) throws IOException {
 			DataInputStream ds = new DataInputStream(System.in);
 			if(this.friendList.containsKey(name)) {
 				System.out.println("If you want exit the chat type (?exit)");
-				this.pastMessages(name);
+				this.pastMessages(data,name);
 				String temp = "NULL";
 				
 				while(!temp.equals("?exit")) {
 				System.out.print(this.userName+">");
 				temp = ds.readLine();
-				Message m = new Message(this.userName,temp);
+				Message m = new Message(this.userId,temp,name);
 				this.friendList.get(name).add(m);
-				data.get(mobile).setMessage(this.userName,m);
+				data.get(name).setMessage(this.userId, m);
 				}
 				}
 			else {
@@ -116,30 +100,29 @@ public class User {
 		public void deleteChat(String name) {
 			this.friendList.get(name);
 		}
-		public void pastMessages(String name) {
-			Iterator<Message> it = this.friendList.get(name).iterator();
+		public void pastMessages(HashMap<String,User> userData,String userid) {
+			Iterator<Message> it = this.friendList.get(userid).iterator();
 			Message m;
 			while(it.hasNext()) {
 				m = it.next();
-				System.out.println(m.getUser()+">"+m.getContent()+"("+m.getDate()+")");
+				System.out.println(userData.get(m.getSender()).getUsername()+">"+m.getContent()+"("+m.getDate()+")");
 			}
 		}
-		public Post post(String name) throws IOException{
+		public Post post() throws IOException{
 			DataInputStream ds = new DataInputStream(System.in);
 			System.out.print("Enter the post message:");
 			String message = ds.readLine();
-			Post p = new Post(this.userName,name,message);
+			Post p = new Post(this.userId,message);
 			
 			return p;
 		}
-		public void Mention(Map<Long,User> data,Long mobile,String postName)
+		public void Mention(Map<String,User> data,String name,int i)
 		{
-			String name = data.get(mobile).getUsername();
-			String ment = this.userName + " is mentioned you in "+ postName;
-			Message m = new Message(this.userName,ment);
-			if(this.friendList.containsKey(mobile)) {
+			String ment = this.userName + " is mentioned you in "+ i;
+			Message m = new Message(this.userName,ment,name);
+			if(this.friendList.containsKey(name)) {
 				this.friendList.get(name).add(m);
-				data.get(mobile).setMessage(this.userName, m);
+				data.get(name).setMessage(this.userName, m);
 			}
 		}
 }
